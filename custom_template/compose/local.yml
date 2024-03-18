@@ -1,0 +1,74 @@
+version: '3'
+
+volumes:
+  django_ready_template_local_postgres_data: {}
+  django_ready_template_local_postgres_data_backups: {}
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: django_ready_template_local_django
+    container_name: django_ready_template_local_django
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - '8000:8000'
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: django_ready_template_production_postgres
+    container_name: django_ready_template_local_postgres
+    volumes:
+      - django_ready_template_local_postgres_data:/var/lib/postgresql/data
+      - django_ready_template_local_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.local/.postgres
+
+  # mysql:
+  #   image: mysql
+  #   restart: always
+  #   environment:
+  #     MYSQL_DATABASE: test_db
+  #     MYSQL_PASSWORD: root
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - ./dbdata:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306" 
+
+  # redis:
+  #   image: "redis:latest"
+  #   ports:
+  #     - "6379:6379"
+  
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      # - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
+      # - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
+      - PGADMIN_DEFAULT_EMAIL=your@email.com
+      - PGADMIN_DEFAULT_PASSWORD=changeit
+    ports:
+      - "5050:80"
+    restart: always
+
+  # phpMyAdmin:
+  #   image: phpmyadmin
+  #   environment:
+  #     PMA_ARBITRARY: 1
+  #   ports:
+  #     - "9090:80"
+
+
+
